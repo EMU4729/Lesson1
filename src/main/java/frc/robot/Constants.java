@@ -18,8 +18,8 @@ public final class Constants {
 
   }
   
-  public static final int MOTOR_ID_LM = 0;
-  public static final int MOTOR_ID_LS = 0;
-  public static final int MOTOR_ID_RM = 0;
-  public static final int MOTOR_ID_RS = 0;
+  public static final int MOTOR_ID_LM = 1;
+  public static final int MOTOR_ID_LS = 2;
+  public static final int MOTOR_ID_RM = 3;
+  public static final int MOTOR_ID_RS = 4;
 }
