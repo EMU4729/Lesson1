@@ -11,14 +11,26 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
  */
 public class DifferentialDriveSub extends SubsystemBase {
   //TODO initialise the motors (4 of them)
-  //private final WPI_TalonSRX a = new WPI_TalonSRX(Constants.MOTOR_ID_LM);
-  
+  private final WPI_TalonSRX l = new WPI_TalonSRX(Constants.MOTOR_ID_LM);
+  private final WPI_TalonSRX l2 = new WPI_TalonSRX(Constants.MOTOR_ID_LS);
+
+  private final WPI_TalonSRX r = new WPI_TalonSRX(Constants.MOTOR_ID_RM);
+  private final WPI_TalonSRX r2 = new WPI_TalonSRX(Constants.MOTOR_ID_RS);
+
   public DifferentialDriveSub() {
     //TODO make two motors on each side run as a pair
-    //b.follow(a);
+    l2.follow(l);
+    r2.follow(r); 
 
-    //a.setSafetyEnabled(true);
-    //a.setInverted(true); // which side // add to both motors on the side
+    l2.setSafetyEnabled(true);
+    l.setSafetyEnabled(true);
+    
+    r.setInverted(true);
+    r2.setInverted(true);
+    r2.setSafetyEnabled(true);
+    r.setSafetyEnabled(true);
+    
+    // which side // add to both motors on the side
   }
 
   @Override
@@ -34,7 +46,9 @@ public class DifferentialDriveSub extends SubsystemBase {
     MathUtil.clamp(throttle, -0.2, 0.2);
     MathUtil.clamp(steering, -0.2, 0.2);
     // TODO take the throttle and steering and calc the power for each side (tank drive)
-    //a.set(power -1->1);
+    l.set(throttle+steering);
+    r.set(throttle-steering);
+
 
   }
 
