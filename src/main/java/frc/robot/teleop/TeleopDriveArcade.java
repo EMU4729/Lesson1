@@ -22,8 +22,8 @@ public class TeleopDriveArcade extends Command {
     double throttle = 0;
     double steering = 0;
 
-    throttle = OI.pilot.getLeftY();
-    steering = OI.pilot.getRightX();
+    throttle = OI.pilot.getLeftY()*0.2;
+    steering = OI.pilot.getRightX()*0.2;
 
 
     //TODO tackle the following tasks one at a time in order
