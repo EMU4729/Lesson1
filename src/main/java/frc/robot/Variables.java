@@ -13,4 +13,6 @@ public final class Variables {
    * Bool to invert robot drive direction flipping the apparent front of the robot
    */
   public static boolean invertDriveDirection = false;
+  public static double driveSpeed = 0.5;
+  public static double driveBackspin = 0.0;
 }

@@ -9,7 +9,10 @@ import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.teleop.TeleopDriveArcade;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -44,9 +47,48 @@ public class RobotContainer {
     new Trigger(Subsystems.m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(Subsystems.m_exampleSubsystem));
 
+    OI.pilot.start().onTrue(new InstantCommand(() -> Variables.invertDriveDirection = !Variables.invertDriveDirection));
+    
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    OI.pilot.b().whileTrue(Subsystems.m_exampleSubsystem.exampleMethodCommand());
+    // OI.pilot.b().whileTrue(Subsystems.m_exampleSubsystem.exampleMethodCommand());
+    OI.pilot.leftTrigger().whileTrue(new StartEndCommand(
+      () -> Subsystems.someSubsystem.set(Variables.driveSpeed),
+      Subsystems.someSubsystem::stop,
+      Subsystems.someSubsystem)
+    );
+    
+    OI.pilot.rightTrigger().whileTrue(new StartEndCommand(
+      () -> Subsystems.someSubsystem.set(-Variables.driveSpeed),
+      Subsystems.someSubsystem::stop,
+      Subsystems.someSubsystem)
+    );
+    
+    OI.pilot.x().onTrue(new InstantCommand(() -> {
+      Variables.driveSpeed = MathUtil.clamp(Variables.driveSpeed + 0.1, 0, 1);
+      Subsystems.someSubsystem.updateSpeed(Variables.driveSpeed);
+      System.out.println("Changed speed to " + Variables.driveSpeed);
+    }));
+    
+    OI.pilot.y().onTrue(new InstantCommand(() -> {
+      Variables.driveSpeed = MathUtil.clamp(Variables.driveSpeed - 0.1, 0, 1);
+      Subsystems.someSubsystem.updateSpeed(Variables.driveSpeed);
+      System.out.println("Changed speed to " + Variables.driveSpeed);
+    }));
+    
+    
+    OI.pilot.a().onTrue(new InstantCommand(() -> {
+      Variables.driveSpeed = MathUtil.clamp(Variables.driveBackspin + 0.02, 0, 1);
+      Subsystems.someSubsystem.updateSpeed(Variables.driveSpeed);
+      System.out.println("Changed backspin to " + Variables.driveBackspin);
+    }));
+    
+    OI.pilot.b().onTrue(new InstantCommand(() -> {
+      Variables.driveSpeed = MathUtil.clamp(Variables.driveBackspin - 0.02, 0, 1);
+      Subsystems.someSubsystem.updateSpeed(Variables.driveSpeed);
+      System.out.println("Changed backspin to " + Variables.driveBackspin);
+    }));
+     
   }
 
   public Command getTeleopCommand() {

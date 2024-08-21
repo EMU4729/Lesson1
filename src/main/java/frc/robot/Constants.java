@@ -22,4 +22,8 @@ public final class Constants {
   public static final int MOTOR_ID_LS = 2;
   public static final int MOTOR_ID_RM = 3;
   public static final int MOTOR_ID_RS = 4;
+
+  public static final int TALON_1_ID = 5;
+  public static final int TALON_2_ID = 6;
+  
 }
