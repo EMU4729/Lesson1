@@ -2,7 +2,10 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.constants;
+
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import frc.robot.utils.builders.EncoderBuilder;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -13,13 +16,22 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static final FileConstants FILE = new FileConstants();
+  public static final LoggerConstants LOGGER = new LoggerConstants();
+
   public static class OperatorConstants {
     public static final int PILOT_XBOX_CONTROLLER_PORT = 0;
-
   }
   
   public static final int MOTOR_ID_LM = 1;
   public static final int MOTOR_ID_LS = 2;
   public static final int MOTOR_ID_RM = 3;
   public static final int MOTOR_ID_RS = 4;
+
+  public static final EncoderBuilder ENCODER_ID_L = new EncoderBuilder(new int[] { 20, 19 }, 59.883 / 256. / 1000);
+  public static final EncoderBuilder ENCODER_ID_R = new EncoderBuilder(new int[] { 18, 17 }, 59.883 / 256. / 1000).withInvert();
+
+  public static final DifferentialDriveKinematics KINEMATICS = new DifferentialDriveKinematics(0.55);
+
 }
