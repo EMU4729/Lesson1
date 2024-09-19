@@ -55,6 +55,7 @@ public class DifferentialDriveSub extends SubsystemBase {
 
   @Override
   public void periodic() {
+    
     poseEstimator.update(
         Rotation2d.fromDegrees(imu.getAngle(IMUAxis.kZ)),
         leftEncoder.getDistance(),
@@ -68,7 +69,10 @@ public class DifferentialDriveSub extends SubsystemBase {
       }
     }
   }
-
+  
+  public double getHeading(){
+    return Math.IEEEremainder(imu.getAngle(), 360);
+  }
   /**
    * Arcade drive.
    * 
@@ -92,6 +96,15 @@ public class DifferentialDriveSub extends SubsystemBase {
     a.set(0);
     b.set(0);
   }
+
+
+// Reset the encoders
+public void resetEncoders() {
+    leftEncoder.reset();
+    rightEncoder.reset();
+}
+
+
   
   public Pose2d getEstimatedPose() {
     return poseEstimator.getEstimatedPosition();

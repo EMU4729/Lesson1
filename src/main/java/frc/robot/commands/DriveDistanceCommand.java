@@ -17,7 +17,7 @@ import frc.robot.Subsystems;
 public class DriveDistanceCommand extends Command {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
 
-  private final PIDController pidController = new PIDController(1, 0, 0);
+  private PIDController pidController = new PIDController(1, 0, 0);
 
   private Timer timer = new Timer();
 
@@ -26,6 +26,7 @@ public class DriveDistanceCommand extends Command {
   private double throttle;
 
   private Pose2d startPose;
+  private double TargetAngle;
 
   private boolean isFinished = false;
 
@@ -38,15 +39,24 @@ public class DriveDistanceCommand extends Command {
     this.timeout = timeout;
     this.distance = distance;
     this.throttle = throttle;
+
+    this.TargetAngle = TargetAngle;
+
+    pidController = new PIDController(0.05, 0.0, 0.02);
+  
+  addRequirements(Subsystems.diffDrive);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    pidController.reset();
     startPose = Subsystems.diffDrive.getEstimatedPose();
+    TargetAngle = 90.0;
     pidController.setSetpoint(startPose.getRotation().getRadians());
     pidController.setTolerance(Rotation2d.fromDegrees(1).getRadians());
-    Subsystems.diffDrive.arcade(throttle, 0);
+   
+    
     timer.start();
   }
 
@@ -57,6 +67,11 @@ public class DriveDistanceCommand extends Command {
       return;
     }
 
+    double currentAngle = Subsystems.diffDrive.getHeading();
+
+    double pidOutput = pidController.calculate(currentAngle, TargetAngle);
+    Subsystems.diffDrive.arcade(throttle, pidOutput);
+    
     if (timer.hasElapsed(timeout)) {
       Subsystems.diffDrive.off();
       isFinished = true;
@@ -64,15 +79,15 @@ public class DriveDistanceCommand extends Command {
     }
 
     var pose = Subsystems.diffDrive.getEstimatedPose();
+    
     if (pose.getTranslation().getDistance(startPose.getTranslation()) >= distance) {
+      
       Subsystems.diffDrive.off();
       isFinished = true;
       return;
     }
 
-    var steering = -pidController.calculate(pose.getRotation().getRadians());
     
-    Subsystems.diffDrive.arcade(throttle, steering);
   }
 
   // Called once the command ends or is interrupted.
