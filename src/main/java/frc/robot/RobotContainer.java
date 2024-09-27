@@ -4,12 +4,17 @@
 
 package frc.robot;
 
-import frc.robot.commands.Auto;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.auto.Auto;
+import frc.robot.commands.auto.AutoAction;
+import frc.robot.commands.auto.autoActions.AutoDriveStraight;
+import frc.robot.commands.auto.autoActions.AutoTurn;
 import frc.robot.teleop.TeleopDriveArcade;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -21,7 +26,6 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final TeleopDriveArcade teleopCommand = new TeleopDriveArcade();
   
-
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
@@ -41,10 +45,11 @@ public class RobotContainer {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
     new Trigger(Subsystems.m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(Subsystems.m_exampleSubsystem));
-
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    OI.pilot.b().whileTrue(Subsystems.m_exampleSubsystem.exampleMethodCommand());
+    
+    OI.pilot.x().onTrue(Subsystems.diffDrive.sysIdTurn.quasistatic(SysIdRoutine.Direction.kForward));
+    OI.pilot.y().onTrue(Subsystems.diffDrive.sysIdTurn.quasistatic(SysIdRoutine.Direction.kReverse));
+    OI.pilot.a().onTrue(Subsystems.diffDrive.sysIdTurn.dynamic(SysIdRoutine.Direction.kForward));
+    OI.pilot.b().onTrue(Subsystems.diffDrive.sysIdTurn.dynamic(SysIdRoutine.Direction.kReverse));
   }
 
   public Command getTeleopCommand() {
@@ -58,6 +63,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
 
-    return new Auto(1, 3, 0.2);
+    return new Auto(new AutoAction[] {
+      // new AutoDriveStraight(1, 0.2, 1),
+      new AutoTurn(Rotation2d.fromDegrees(90), 5),
+    });
   }
 }
