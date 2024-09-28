@@ -33,5 +33,7 @@ public final class Constants {
   public static final EncoderBuilder ENCODER_ID_R = new EncoderBuilder(new int[] { 18, 17 }, 59.883 / 256. / 1000).withInvert();
 
   public static final DifferentialDriveKinematics KINEMATICS = new DifferentialDriveKinematics(0.55);
-
+  public static double kDriveTick2cm = 1/4096*6* Math.PI * 1/12*30.48;
+  public static String Left_Encoder_Value = "Left_Encoder_Value";
+  public static String Right_Encoder_Value = "Right_Encoder_Value";
 }

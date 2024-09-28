@@ -12,6 +12,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems;
+import frc.robot.constants.Constants;
+import frc.robot.subsystems.DifferentialDriveSub;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+
 
 /** An example command that uses an example subsystem. */
 public class DriveDistanceCommand extends Command {
@@ -29,7 +34,7 @@ public class DriveDistanceCommand extends Command {
   private double TargetAngle;
 
   private boolean isFinished = false;
-
+  private DifferentialDriveSub differentialDriveSub = new DifferentialDriveSub();
   /**
    * Creates a new ExampleCommand.
    *
@@ -43,13 +48,14 @@ public class DriveDistanceCommand extends Command {
     this.TargetAngle = TargetAngle;
 
     pidController = new PIDController(0.05, 0.0, 0.02);
-  
+    //SmartDashboard.putNumber(Constants.Left_Encoder_Value, DifferentialDriveSub.lm_encoder_value * Constants.kDriveTick2cm);
   addRequirements(Subsystems.diffDrive);
   }
 
-  // Called when the command is initially scheduled.
+  // Called when the command is initially scheduled
   @Override
   public void initialize() {
+    
     pidController.reset();
     startPose = Subsystems.diffDrive.getEstimatedPose();
     TargetAngle = 90.0;
