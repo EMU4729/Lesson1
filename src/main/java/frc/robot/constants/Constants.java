@@ -5,7 +5,10 @@
 package frc.robot.constants;
 
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import frc.robot.utils.builders.EncoderBuilder;
+import frc.robot.utils.motorsupplier.MotorSupplier;
+import frc.robot.utils.motorsupplier.TalonPwm;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -24,10 +27,12 @@ public final class Constants {
     public static final int PILOT_XBOX_CONTROLLER_PORT = 0;
   }
   
-  public static final int MOTOR_ID_LM = 1;
-  public static final int MOTOR_ID_LS = 2;
-  public static final int MOTOR_ID_RM = 3;
-  public static final int MOTOR_ID_RS = 4;
+  public static final boolean USE_CLAMPING = true;
+
+  public static final MotorSupplier<Talon> MOTOR_LM_SUPPLIER = new TalonPwm(2).withInvert().withSafety();
+  public static final MotorSupplier<Talon> MOTOR_LS_SUPPLIER = new TalonPwm(3);
+  public static final MotorSupplier<Talon> MOTOR_RM_SUPPLIER = new TalonPwm(0).withSafety();
+  public static final MotorSupplier<Talon> MOTOR_RS_SUPPLIER = new TalonPwm(1).withInvert();
 
   public static final EncoderBuilder ENCODER_ID_L = new EncoderBuilder(new int[] { 20, 19 }, 59.883 / 256. / 1000);
   public static final EncoderBuilder ENCODER_ID_R = new EncoderBuilder(new int[] { 18, 17 }, 59.883 / 256. / 1000).withInvert();

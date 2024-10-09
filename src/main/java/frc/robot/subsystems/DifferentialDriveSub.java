@@ -9,16 +9,13 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Variables;
-import frc.robot.constants.Constants;
 import edu.wpi.first.wpilibj.Encoder;
-
 import java.util.function.Consumer;
-
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import static frc.robot.constants.Constants.*;
 
 /**
  * Drive Subsystem.
@@ -26,35 +23,57 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
  */
 public class DifferentialDriveSub extends SubsystemBase {
   // initialise the motors (4 of them)
-  private final WPI_TalonSRX a = new WPI_TalonSRX(Constants.MOTOR_ID_LM);
-  private final WPI_TalonSRX a2 = new WPI_TalonSRX(Constants.MOTOR_ID_LS);
-  private final WPI_TalonSRX b = new WPI_TalonSRX(Constants.MOTOR_ID_RM);
-  private final WPI_TalonSRX b2 = new WPI_TalonSRX(Constants.MOTOR_ID_RS);
+  private final Talon leftMain = MOTOR_LM_SUPPLIER.get();
+  private final Talon leftSlave =  MOTOR_LS_SUPPLIER.get();
+  private final Talon rightMain =  MOTOR_RM_SUPPLIER.get();
+  private final Talon rightSlave =  MOTOR_RS_SUPPLIER.get();
 
   private final ADIS16470_IMU imu = new ADIS16470_IMU();
-  private final Encoder leftEncoder = Constants.ENCODER_ID_L.build();
-  private final Encoder rightEncoder = Constants.ENCODER_ID_R.build();
+  private final Encoder leftEncoder = ENCODER_ID_L.build();
+  private final Encoder rightEncoder = ENCODER_ID_R.build();
   
   public final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(
-    Constants.KINEMATICS,
+    KINEMATICS,
     Rotation2d.fromDegrees(imu.getAngle(IMUAxis.kZ)),
     0, 0, new Pose2d());
   
   public DifferentialDriveSub() {
-    a2.follow(a);
-    b2.follow(b);    
+    leftSlave.addFollower(leftMain);
+    rightSlave.addFollower(rightMain);    
         
-    a.setSafetyEnabled(true);
-    b.setSafetyEnabled(true);
-        
-    // invert the correct side to account for physically inverted motor directions
-    if (Variables.driveDirection) {
-      b.setInverted(true);
-      b2.setInverted(true);
-    } else {
-      a.setInverted(true);
-      a2.setInverted(true);
+    leftMain.setSafetyEnabled(true);
+    rightMain.setSafetyEnabled(true);
+  }
+
+  @Override
+  public void periodic() {
+    // update the pose estimator
+    poseEstimator.update(
+        Rotation2d.fromDegrees(imu.getAngle(IMUAxis.kZ)),
+        leftEncoder.getDistance(),
+        rightEncoder.getDistance());
+  }
+
+  /**
+   * Arcade drive.
+   * 
+   * @param driveThrottle The speed
+   * @param turnThrottle The steering
+   */
+  public void arcade(double driveThrottle, double turnThrottle) {
+    if (USE_CLAMPING) {
+      driveThrottle = MathUtil.clamp(driveThrottle, -0.4, 0.4);
+      turnThrottle = MathUtil.clamp(turnThrottle, -0.8, 0.8);
     }
+
+    leftMain.set(driveThrottle+turnThrottle);
+    rightMain.set(driveThrottle-turnThrottle);
+  }
+  
+  /** Stops all motors. */
+  public void off() {
+    leftMain.set(0);
+    rightMain.set(0);
   }
 
   public final SysIdRoutine sysIdDrive = new SysIdRoutine(
@@ -99,43 +118,13 @@ public class DifferentialDriveSub extends SubsystemBase {
       }
     }, this));
   
-  @Override
-  public void periodic() {
-    // update the pose estimator
-    poseEstimator.update(
-        Rotation2d.fromDegrees(imu.getAngle(IMUAxis.kZ)),
-        leftEncoder.getDistance(),
-        rightEncoder.getDistance());
-  }
-
-  /**
-   * Arcade drive.
-   * 
-   * @param driveThrottle The speed
-   * @param turnThrottle The steering
-   */
-  public void arcade(double driveThrottle, double turnThrottle) {
-    driveThrottle = MathUtil.clamp(driveThrottle, -0.4, 0.4);
-    turnThrottle = MathUtil.clamp(turnThrottle, -0.6, 0.6);
-
-    a.set(driveThrottle+turnThrottle);
-    b.set(driveThrottle-turnThrottle);
-  }
-  
-  /** Stops all motors. */
-  public void off() {
-    a.set(0);
-    b.set(0);
-  }
-
   public Pose2d getEstimatedPose() {
     return poseEstimator.getEstimatedPosition();
   }
-  
   public double getTurnThrottle() {
-    return a.get() - b.get();
+    return leftMain.get() - rightMain.get();
   }
   public double getDriveThrottle() {
-    return (a.get() + b.get()) / 2;
+    return (leftMain.get() + rightMain.get()) / 2;
   }
 }
