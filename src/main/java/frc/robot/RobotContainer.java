@@ -4,11 +4,10 @@
 
 package frc.robot;
 
-import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.auto.Auto;
-import frc.robot.commands.auto.AutoAction;
-import frc.robot.commands.auto.autoActions.AutoDriveStraight;
-import frc.robot.commands.auto.autoActions.AutoTurn;
+import frc.robot.commands.auto.AutoFactory;
+import frc.robot.commands.auto.autoFactories.AutoDriveStraight;
+import frc.robot.commands.auto.autoFactories.AutoTurn;
 import frc.robot.teleop.TeleopDriveArcade;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,9 +41,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(Subsystems.m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(Subsystems.m_exampleSubsystem));
     
     OI.pilot.x().onTrue(Subsystems.diffDrive.sysIdTurn.quasistatic(SysIdRoutine.Direction.kForward));
     OI.pilot.y().onTrue(Subsystems.diffDrive.sysIdTurn.quasistatic(SysIdRoutine.Direction.kReverse));
@@ -63,9 +59,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
 
-    return new Auto(new AutoAction[] {
+    return new Auto(new AutoFactory[] {
       // new AutoDriveStraight(1, 0.2, 1),
-      new AutoTurn(Rotation2d.fromDegrees(90), 5),
+      // new AutoTurn(Rotation2d.fromDegrees(90), 5),
     });
   }
 }

@@ -31,18 +31,23 @@ public class DifferentialDriveSub extends SubsystemBase {
   private final ADIS16470_IMU imu = new ADIS16470_IMU();
   private final Encoder leftEncoder = ENCODER_ID_L.build();
   private final Encoder rightEncoder = ENCODER_ID_R.build();
+
+  private double driveThrottle;
+  private double turnThrottle;
   
   public final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(
     KINEMATICS,
     Rotation2d.fromDegrees(imu.getAngle(IMUAxis.kZ)),
-    0, 0, new Pose2d());
+    leftEncoder.getDistance(), rightEncoder.getDistance(), new Pose2d());
   
   public DifferentialDriveSub() {
     leftSlave.addFollower(leftMain);
     rightSlave.addFollower(rightMain);    
-        
     leftMain.setSafetyEnabled(true);
     rightMain.setSafetyEnabled(true);
+
+    leftEncoder.setDistancePerPulse(1);
+    rightEncoder.setDistancePerPulse(1);
   }
 
   @Override
@@ -65,6 +70,8 @@ public class DifferentialDriveSub extends SubsystemBase {
       driveThrottle = MathUtil.clamp(driveThrottle, -0.4, 0.4);
       turnThrottle = MathUtil.clamp(turnThrottle, -0.8, 0.8);
     }
+    this.driveThrottle = driveThrottle;
+    this.turnThrottle = turnThrottle;
 
     leftMain.set(driveThrottle+turnThrottle);
     rightMain.set(driveThrottle-turnThrottle);
@@ -74,6 +81,8 @@ public class DifferentialDriveSub extends SubsystemBase {
   public void off() {
     leftMain.set(0);
     rightMain.set(0);
+    driveThrottle = 0;
+    turnThrottle = 0;
   }
 
   public final SysIdRoutine sysIdDrive = new SysIdRoutine(
@@ -83,16 +92,16 @@ public class DifferentialDriveSub extends SubsystemBase {
       Units.Second.of(6)),
     new SysIdRoutine.Mechanism(new Consumer<Measure<Voltage>>() {
       @Override
-      public void accept(Measure<Voltage> t) {
-        arcade(t.in(Units.Volt), 0);
+      public void accept(Measure<Voltage> value) {
+        arcade(value.in(Units.Volt), 0);
       }
     }, new Consumer<SysIdRoutineLog>() {
       @Override
-      public void accept(SysIdRoutineLog t) {
-        t.motor("drive")
-          .voltage(Units.Volt.of(getDriveThrottle()))
+      public void accept(SysIdRoutineLog log) {
+        log.motor("drive")
+          .voltage(Units.Volt.of(driveThrottle))
           .linearPosition(Units.Meter.of(leftEncoder.getDistance()))
-          .linearVelocity(Units.MetersPerSecond.of(1234))
+          .linearVelocity(Units.MetersPerSecond.of(leftEncoder.getRate()))
           .linearAcceleration(Units.MetersPerSecondPerSecond.of(imu.getAccelX()));
       }
     }, this));
@@ -104,14 +113,14 @@ public class DifferentialDriveSub extends SubsystemBase {
       Units.Second.of(6)),
     new SysIdRoutine.Mechanism(new Consumer<Measure<Voltage>>() {
       @Override
-      public void accept(Measure<Voltage> t) {
-        arcade(0, t.in(Units.Volt));
+      public void accept(Measure<Voltage> value) {
+        arcade(0, value.in(Units.Volt));
       }
     }, new Consumer<SysIdRoutineLog>() {
       @Override
-      public void accept(SysIdRoutineLog t) {
-        t.motor("turn")
-          .voltage(Units.Volt.of(getTurnThrottle()))
+      public void accept(SysIdRoutineLog log) {
+        log.motor("turn")
+          .voltage(Units.Volt.of(turnThrottle))
           .angularPosition(Units.Degrees.of(imu.getAngle(imu.getYawAxis())))
           .angularVelocity(Units.DegreesPerSecond.of(imu.getRate(imu.getYawAxis())))
           .angularAcceleration(Units.DegreesPerSecond.per(Units.Second).of(imu.getYFilteredAccelAngle()));
@@ -122,9 +131,9 @@ public class DifferentialDriveSub extends SubsystemBase {
     return poseEstimator.getEstimatedPosition();
   }
   public double getTurnThrottle() {
-    return leftMain.get() - rightMain.get();
+    return turnThrottle;
   }
   public double getDriveThrottle() {
-    return (leftMain.get() + rightMain.get()) / 2;
+    return driveThrottle;
   }
 }

@@ -1,10 +1,10 @@
-package frc.robot.commands.auto.autoActions;
+package frc.robot.commands.auto.autoFactories;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.commands.auto.AutoAction;
+import frc.robot.commands.auto.AutoFactory;
 import frc.robot.commands.auto.autoCommands.AutoDriveStraightCommand;
 
-public class AutoDriveStraight implements AutoAction {
+public class AutoDriveStraight implements AutoFactory {
 
     private double timeout;
     private double distance;
